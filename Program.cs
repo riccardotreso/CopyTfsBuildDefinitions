@@ -1,42 +1,156 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.Build.Client;
+using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.VersionControl.Client;
 
-namespace CopyTfsBuildDefinitions
+namespace TFSHelper
 {
+
+    public enum Operation
+    {
+        BUILDDUMP,
+        LIST,
+        BUILDCOPY,
+        NONE
+    }
+
+    public class CommandObject
+    {
+        public string Source { get; set; }
+        public string Destination { get; set; }
+        public string ProjectSource { get; set; }
+        public string ProjectDestination { get; set; }
+        public Operation? Mode { get; set; }
+    }
+
+
     class Program
     {
         static void Main(string[] args)
         {
-            if (args.Length != 4)
+
+            var command = Args.Configuration.Configure<CommandObject>().CreateAndBind(args);
+
+            string tfsSourceServer = string.Empty,
+                 tfsDestinationServer = string.Empty,
+                sourceProjectName = string.Empty,
+                destinationProjectName = string.Empty;
+
+            if (command.Mode != Operation.LIST)
             {
-                Console.WriteLine(@"Usage: CopyTfsBuildDefinitions <TfsCollectionUri> <SourceProjectName> <TargetProjectName>
-e.g. CopyTfsBuildDefinitions http://tfs1:8080/tfs/myCollection projectA projectB");
+                Console.WriteLine(@"Usage: TFSHelper /source <TfsCollectionUri> /projectsource <SourceProjectName> /mode list
+e.g. TFSHelper /source http://tfs.24orecww.com:8080/tfs/INTRANET /projectsource SharePoint2013 /mode list");
+                Exit();
             }
-
-            var tfsCollectionUri = args[0];
-            var sourceProjectName = args[1];
-            var targetProjectName = args[3];
-
-            var server = GetTfsBuildServer(tfsCollectionUri);
-
-            var sourceBuildDefinitions = server.QueryBuildDefinitions(sourceProjectName);
-            foreach (var sourceBuildDef in sourceBuildDefinitions)
+            else
             {
-                var targetBuildDef = server.CreateBuildDefinition(targetProjectName);
-                Copy(sourceBuildDef, targetBuildDef);
-                targetBuildDef.Save();
+
+                tfsSourceServer = command.Source;
+                sourceProjectName = command.ProjectSource;
+
+                tfsDestinationServer = command.Destination;
+                destinationProjectName = command.ProjectDestination;
+
+                IBuildServer buildServer = GetTfsBuildServer(tfsSourceServer);
+
+                //IBuildServer serverNew = GetTfsBuildServer(tfsDestinationServer);
+
+                IBuildDefinition[] sourceBuildDefinitions = buildServer.QueryBuildDefinitions(sourceProjectName);
+                if (sourceBuildDefinitions.Count() == 0)
+                {
+                    Console.WriteLine("No build to display");
+                }
+                else
+                {
+
+                    Console.WriteLine(string.Join(System.Environment.NewLine, sourceBuildDefinitions
+                        .Select(x => string.Format("Build Name: {0}; Build Description: {1}", x.Name, x.Description))
+                        .ToArray()));
+                }
+
+                VersionControlServer versionServer = GetTfsVersionControlServer(tfsSourceServer);
+                TeamProject tProject = versionServer.GetTeamProject(sourceProjectName);
+                if (tProject == null)
+                {
+                    Console.WriteLine("Version server not valid");
+                    Exit();
+                    return;
+                }
+
+                ItemSet items = versionServer.GetItems(tProject.ServerItem, RecursionType.OneLevel);
+                if (items.Items.Count() == 0)
+                {
+                    Console.WriteLine("No items to display");
+                    Exit();
+                    return;
+                }
+
+                Console.WriteLine(string.Join(System.Environment.NewLine,
+                    items.Items
+                    .Select(x => string.Format("Name: {0}", x.ServerItem.Replace(tProject.ServerItem + "/", string.Empty)))
+                    .ToArray()));
+
+                Exit();
+
+                /*
+                foreach (var sourceBuildDef in sourceBuildDefinitions)
+                {
+                    IBuildDefinition targetBuildDef = serverNew.CreateBuildDefinition(destinationProjectName);
+                    Copy(sourceBuildDef, targetBuildDef);
+                    targetBuildDef.Save();
+                }
+                 * */
             }
+        }
+
+
+        private static void Exit() {
+            Console.WriteLine(System.Environment.NewLine + "Press any key to exit");
+            Console.ReadLine();
         }
 
         static IBuildServer GetTfsBuildServer(string tfsCollectionUri)
         {
-            var collection = new Microsoft.TeamFoundation.Client.TfsTeamProjectCollection(new Uri(tfsCollectionUri));
+
+            /*NetworkCredential netCred = new NetworkCredential("**", "**", "**");
+            BasicAuthCredential basicCred = new BasicAuthCredential(netCred);
+            TfsClientCredentials tfsCred = new TfsClientCredentials(basicCred);
+            tfsCred.AllowInteractive = false;
+            */
+
+
+            var collection = new TfsTeamProjectCollection(new Uri(tfsCollectionUri));
+
+            //collection.Authenticate();
+
+
             collection.EnsureAuthenticated();
             return collection.GetService<IBuildServer>();
+        }
+
+        static VersionControlServer GetTfsVersionControlServer(string tfsCollectionUri)
+        {
+
+            /*NetworkCredential netCred = new NetworkCredential("**", "**", "**");
+            BasicAuthCredential basicCred = new BasicAuthCredential(netCred);
+            TfsClientCredentials tfsCred = new TfsClientCredentials(basicCred);
+            tfsCred.AllowInteractive = false;
+            */
+
+
+            var collection = new TfsTeamProjectCollection(new Uri(tfsCollectionUri));
+
+            //collection.Authenticate();
+
+
+            collection.EnsureAuthenticated();
+            return collection.GetService<VersionControlServer>();
         }
 
         static void Copy(IBuildDefinition source, IBuildDefinition target)
