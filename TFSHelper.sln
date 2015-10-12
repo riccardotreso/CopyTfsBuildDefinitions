@@ -3,6 +3,22 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TFSHelper", "TFSHelper.csproj", "{CA22D3E5-6E80-4A15-97C6-2205C19F0221}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "lib", "lib", "{FCA55365-7F63-4F6B-A5C1-289A12B610CB}"
+	ProjectSection(SolutionItems) = preProject
+		lib\Microsoft.TeamFoundation.Build.Client.dll = lib\Microsoft.TeamFoundation.Build.Client.dll
+		lib\Microsoft.TeamFoundation.Build.Common.dll = lib\Microsoft.TeamFoundation.Build.Common.dll
+		lib\Microsoft.TeamFoundation.Build.Common.xml = lib\Microsoft.TeamFoundation.Build.Common.xml
+		lib\Microsoft.TeamFoundation.Client.dll = lib\Microsoft.TeamFoundation.Client.dll
+		lib\Microsoft.TeamFoundation.Common.dll = lib\Microsoft.TeamFoundation.Common.dll
+		lib\Microsoft.TeamFoundation.Common.Library.dll = lib\Microsoft.TeamFoundation.Common.Library.dll
+		lib\Microsoft.TeamFoundation.dll = lib\Microsoft.TeamFoundation.dll
+		lib\Microsoft.TeamFoundation.VersionControl.Client.dll = lib\Microsoft.TeamFoundation.VersionControl.Client.dll
+		lib\Microsoft.TeamFoundation.VersionControl.Common.dll = lib\Microsoft.TeamFoundation.VersionControl.Common.dll
+		lib\Microsoft.TeamFoundation.WorkItemTracking.Client.Cache.dll = lib\Microsoft.TeamFoundation.WorkItemTracking.Client.Cache.dll
+		lib\Microsoft.TeamFoundation.WorkItemTracking.Client.DataStore.dll = lib\Microsoft.TeamFoundation.WorkItemTracking.Client.DataStore.dll
+		lib\Microsoft.TeamFoundation.WorkItemTracking.Client.RuleEngine.dll = lib\Microsoft.TeamFoundation.WorkItemTracking.Client.RuleEngine.dll
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
