@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.Build.Client;
 using Microsoft.TeamFoundation.Client;
+using Microsoft.TeamFoundation.Framework.Client;
 using Microsoft.TeamFoundation.VersionControl.Client;
 
 namespace TFSHelper
@@ -57,6 +58,7 @@ e.g. TFSHelper /source http://tfs.24orecww.com:8080/tfs/INTRANET /projectsource 
                 tfsDestinationServer = command.Destination;
                 destinationProjectName = command.ProjectDestination;
 
+               
                 IBuildServer buildServer = GetTfsBuildServer(tfsSourceServer);
 
                 //IBuildServer serverNew = GetTfsBuildServer(tfsDestinationServer);
@@ -115,6 +117,20 @@ e.g. TFSHelper /source http://tfs.24orecww.com:8080/tfs/INTRANET /projectsource 
             Console.ReadLine();
         }
 
+
+
+        public static void GetAllCollections(string tfsCollectionUri)
+        {
+            Uri configurationServerUri = new Uri(tfsCollectionUri);
+            TfsConfigurationServer configurationServer = TfsConfigurationServerFactory.GetConfigurationServer(configurationServerUri);
+
+            ITeamProjectCollectionService tpcService = configurationServer.GetService<ITeamProjectCollectionService>();
+
+            var tpc = tpcService.GetCollections();
+
+            
+        }
+
         static IBuildServer GetTfsBuildServer(string tfsCollectionUri)
         {
 
@@ -124,6 +140,7 @@ e.g. TFSHelper /source http://tfs.24orecww.com:8080/tfs/INTRANET /projectsource 
             tfsCred.AllowInteractive = false;
             */
 
+            
 
             var collection = new TfsTeamProjectCollection(new Uri(tfsCollectionUri));
 
@@ -155,7 +172,7 @@ e.g. TFSHelper /source http://tfs.24orecww.com:8080/tfs/INTRANET /projectsource 
 
         static void Copy(IBuildDefinition source, IBuildDefinition target)
         {
-            target.BatchSize = source.BatchSize;
+            //target.BatchSize = source.BatchSize;
             target.BuildController = source.BuildController;
             target.ContinuousIntegrationType = source.ContinuousIntegrationType;
             target.ContinuousIntegrationQuietPeriod = source.ContinuousIntegrationQuietPeriod;
@@ -163,8 +180,8 @@ e.g. TFSHelper /source http://tfs.24orecww.com:8080/tfs/INTRANET /projectsource 
             target.Description = source.Description;
             target.Process = source.Process;
             target.ProcessParameters = source.ProcessParameters;
-            target.QueueStatus = source.QueueStatus;
-            target.TriggerType = source.TriggerType;
+            //target.QueueStatus = source.QueueStatus;
+            //target.TriggerType = source.TriggerType;
 
             CopySchedules(source, target);
             CopyMappings(source, target);
